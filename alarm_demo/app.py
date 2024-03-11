@@ -2,6 +2,10 @@
 """The app module, containing the app factory function."""
 import logging
 import sys
+import disnake
+from disnake.ext import commands as disnake_commands
+import threading
+import os
 
 from flask import Flask, render_template
 
@@ -17,6 +21,25 @@ from alarm_demo.extensions import (
     migrate,
 )
 
+intents = disnake.Intents.default()
+intents.message_content = True
+
+bot = disnake_commands.Bot(command_prefix='!', intents=intents)
+discord_key = os.environ.get('DISCORD_TOKEN')
+
+@bot.event
+async def on_ready():
+    print(f'Logged in as {bot.user}')
+    
+@bot.command()
+async def ping(ctx):
+    await ctx.send('Pong!')
+
+def run_bot():
+    bot.run(discord_key)
+
+
+run_bot()
 
 def create_app(config_object="alarm_demo.settings"):
     """Create application factory, as explained here: http://flask.pocoo.org/docs/patterns/appfactories/.
@@ -89,3 +112,10 @@ def configure_logger(app):
     handler = logging.StreamHandler(sys.stdout)
     if not app.logger.handlers:
         app.logger.addHandler(handler)
+        
+if __name__ == '__main__':
+    # Using threads to run both the bot and the Flask app
+    t1 = threading.Thread(target=run_bot)
+    t2 = threading.Thread(target=run_flask)
+    t1.start()
+    t2.start()
