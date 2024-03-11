@@ -1,0 +1,6 @@
+[run]
+source = alarm_demo
+omit = 
+    tests/*
+    autoapp.py
+
