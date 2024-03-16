@@ -39,3 +39,5 @@ Flask-DebugToolbar==0.14.1
 
 # Environment variable parsing
 environs==11.0.0
+
+pytz==2021.1

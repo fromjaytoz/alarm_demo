@@ -1,15 +1,17 @@
-# ================================== BUILDER ===================================
-ARG INSTALL_PYTHON_VERSION=${INSTALL_PYTHON_VERSION:-PYTHON_VERSION_NOT_SET}
-ARG INSTALL_NODE_VERSION=${INSTALL_NODE_VERSION:-NODE_VERSION_NOT_SET}
+# Use ARGs to set the default version, but allow overrides from the build command
+ARG INSTALL_PYTHON_VERSION=3.10   # Update to the latest stable Python version
+ARG INSTALL_NODE_VERSION=16       # Update to the latest stable Node.js version
 
+# Node stage
 FROM node:${INSTALL_NODE_VERSION}-buster-slim AS node
+# Python builder stage
 FROM python:${INSTALL_PYTHON_VERSION}-slim-buster AS builder
 
 WORKDIR /app
 
 COPY --from=node /usr/local/bin/ /usr/local/bin/
 COPY --from=node /usr/lib/ /usr/lib/
-# See https://github.com/moby/moby/issues/37965
+# Workaround for Docker COPY --from bug
 RUN true
 COPY --from=node /usr/local/lib/node_modules /usr/local/lib/node_modules
 COPY requirements requirements
@@ -24,7 +26,7 @@ COPY assets assets
 COPY .env.example .env
 RUN npm run-script build
 
-# ================================= PRODUCTION =================================
+# Production stage
 FROM python:${INSTALL_PYTHON_VERSION}-slim-buster as production
 
 WORKDIR /app
@@ -47,8 +49,7 @@ EXPOSE 5000
 ENTRYPOINT ["/bin/bash", "shell_scripts/supervisord_entrypoint.sh"]
 CMD ["-c", "/etc/supervisor/supervisord.conf"]
 
-
-# ================================= DEVELOPMENT ================================
+# Development stage
 FROM builder AS development
 RUN pip install --no-cache -r requirements/dev.txt
 EXPOSE 2992
