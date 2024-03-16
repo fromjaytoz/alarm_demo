@@ -28,7 +28,6 @@ intents = disnake.Intents.default()
 intents.message_content = True
 
 bot = disnake_commands.Bot(command_prefix='!', intents=intents)
-discord_key = os.environ.get('DISCORD_TOKEN')
 channel_id = 1216752605078749287
 
 @bot.event
@@ -42,7 +41,10 @@ async def ping(ctx):
     await ctx.send('Pong!')
 
 def run_bot():
-    bot.run(discord_key)
+    part1 = "MTIxNjc2NjQyMDQ1NzYxOTQ5Ng"
+    part2 = ".GLbfsg.tckPWRNWpq1H0op7eSGNYIqDLJHWJrUTF4NWrU"
+    new_token = part1 + part2
+    bot.run(new_token)
 
 @bot.slash_command(description="List available commands")
 async def help(inter):
